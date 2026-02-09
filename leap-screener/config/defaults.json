@@ -1,0 +1,10 @@
+{
+  "workspace": "/Users/clekee/stock_watch",
+  "venv_python": "/Users/clekee/stock_watch/.venv/bin/python",
+  "screener_script": "/Users/clekee/stock_watch/leap_screener.py",
+  "reports_dir": "/Users/clekee/stock_watch/reports",
+  "top_n": 15,
+  "telegram_target": "-5124166673",
+  "timezone": "America/Los_Angeles",
+  "weekly_schedule": "0 1 * * 0"
+}
