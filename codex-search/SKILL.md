@@ -49,7 +49,7 @@ Then **read the output file and send the content to the user in chat**.
 | Flag | Required | Default | Description |
 |------|----------|---------|-------------|
 | `--prompt` | Yes | — | Research query |
-| `--output` | No | `~/work/openclaw-skills-working-data/codex-search/<task>.md` | Output file path |
+| `--output` | No | `~/.openclaw/workspace/codex-search-results/<task>.md` | Output file path |
 | `--task-name` | No | `search-<timestamp>` | Task identifier |
 | `--telegram-group` | No | — | Telegram chat ID for callback (send full results) |
 | `--model` | No | `gpt-5.3-codex` | Model override |
@@ -59,6 +59,6 @@ Then **read the output file and send the content to the user in chat**.
 
 | File | Content |
 |------|---------|
-| `~/work/openclaw-skills-working-data/codex-search/<task>.md` | Search report (incremental) |
-| `~/work/openclaw-skills-working-data/codex-search/latest-meta.json` | Task metadata + status |
-| `~/work/openclaw-skills-working-data/codex-search/task-output.txt` | Raw Codex output |
+| `~/.openclaw/workspace/codex-search-results/<task>.md` | Search report (incremental) |
+| `~/.openclaw/workspace/codex-search-results/latest-meta.json` | Task metadata + status |
+| `~/.openclaw/workspace/codex-search-results/task-output.txt` | Raw Codex output |
