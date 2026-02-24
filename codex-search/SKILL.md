@@ -42,7 +42,7 @@ Then **read the output file and send the content to the user in chat**.
 
 ## Post-Search Rule
 
-**Always send the full search results directly in chat.** Never just tell the user a file path — they won't go read it. Read the result file and summarize/send the content in the conversation.
+**Read the result file, extract the "Brief Summary" section, and send a clean synthesized answer in chat.** Do NOT dump the raw per-search-round notes (Search 1, Search 2...) — the user wants the final conclusion, not the research process. Never just give a file path.
 
 ## Parameters
 

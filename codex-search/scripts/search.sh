@@ -133,18 +133,20 @@ if [[ -n "$TELEGRAM_GROUP" ]] && [[ -x "$OPENCLAW_BIN" ]]; then
   [[ "$EXIT_CODE" == "124" ]] && STATUS_EMOJI="⏱"
   [[ "$EXIT_CODE" != "0" ]] && [[ "$EXIT_CODE" != "124" ]] && STATUS_EMOJI="❌"
 
-  # Read the full result file (truncate at 3500 chars for Telegram message limit)
-  FULL_CONTENT=$(cat "$OUTPUT" 2>/dev/null | head -c 3500 || echo "No results")
-  TRUNCATED=""
-  if [[ $(wc -c < "$OUTPUT" 2>/dev/null || echo 0) -gt 3500 ]]; then
-    TRUNCATED="
-
-_(结果已截断，完整内容 ${LINES} 行)_"
+  # Extract only the Brief Summary section (the final synthesized result)
+  SUMMARY=$(sed -n '/^## .*[Ss]ummary/,/^---/p' "$OUTPUT" 2>/dev/null | head -c 3500 || echo "")
+  if [[ -z "$SUMMARY" || "$SUMMARY" =~ ^[[:space:]]*$ ]]; then
+    # Fallback: last 1000 chars if no summary section found
+    SUMMARY=$(tail -c 1000 "$OUTPUT" 2>/dev/null || echo "No results")
   fi
 
   MSG="${STATUS_EMOJI} *Codex Search 完成* (${DURATION})
 
-${FULL_CONTENT}${TRUNCATED}"
+🔍 *查询:* ${PROMPT}
+
+${SUMMARY}
+
+_(完整报告 ${LINES} 行，保存在 ${OUTPUT})_"
 
   "$OPENCLAW_BIN" message send \
     --channel telegram \
