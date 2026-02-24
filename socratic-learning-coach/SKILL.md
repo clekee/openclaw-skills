@@ -1,6 +1,6 @@
 ---
 name: socratic-learning-coach
-description: Guide learning with a Socratic questioning method that diagnoses understanding gaps without giving direct answers too early. Use when users ask to deep dive a topic via questions, want “苏格拉底提问法”, ask for active recall drills, concept checks, interview-style probing, or anti-cramming learning workflows.
+description: Guide learning with a Socratic questioning method that diagnoses understanding gaps without giving direct answers too early. Use when users ask to deep dive a topic via questions, want “苏格拉底提问法/苏格拉底”, say “根据上面的内容，苏格拉底式提问我”, “提问我几个苏格拉底问题”, or ask for active recall drills, concept checks, interview-style probing, or anti-cramming learning workflows.
 ---
 
 # Socratic Learning Coach
