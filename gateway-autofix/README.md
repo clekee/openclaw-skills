@@ -9,7 +9,7 @@ ai.openclaw.gateway (KeepAlive=true)
         │ 反复崩溃
         ▼
 ai.openclaw.watchdog (每 60s 检查)
-        │ 检测到 ≥5 次崩溃 / 120s
+        │ 检测到 ≥5 次崩溃 / 600s
         ▼
   Claude Code 自动诊断修复 config
         │
@@ -52,7 +52,7 @@ rm ~/Library/LaunchAgents/ai.openclaw.watchdog.plist
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
 | `OPENCLAW_WATCHDOG_CRASH_THRESHOLD` | 5 | 触发修复的崩溃次数 |
-| `OPENCLAW_WATCHDOG_WINDOW_SECS` | 120 | 崩溃计数时间窗口 |
+| `OPENCLAW_WATCHDOG_WINDOW_SECS` | 600 | 崩溃计数时间窗口 (10分钟) |
 | `OPENCLAW_WATCHDOG_MAX_FIX` | 2 | 最大修复尝试次数 |
 | `OPENCLAW_WATCHDOG_CLAUDE_TIMEOUT` | 300 | Claude Code 超时(秒) |
 | `OPENCLAW_WATCHDOG_COOLDOWN_SECS` | 600 | 两次修复之间最小间隔 |
