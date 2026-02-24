@@ -89,6 +89,7 @@ fi
 $TIMEOUT_CMD "$CODEX_BIN" exec \
   --model "$MODEL" \
   --full-auto \
+  --add-dir "$RESULT_DIR" \
   -c 'model_reasoning_effort="low"' \
   "$SEARCH_INSTRUCTION" 2>&1 | tee "${RESULT_DIR}/task-output.txt"
 EXIT_CODE=${PIPESTATUS[0]}
