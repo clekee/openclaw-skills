@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Deep search via Codex CLI with dispatch pattern (background + Telegram callback)
+# codex-search — Deep web search via Codex CLI with dispatch pattern (background + Telegram callback)
 set -euo pipefail
 
-# === Paths adapted for macOS (clekee's Mac mini) ===
-RESULT_DIR="${HOME}/work/openclaw-skills/codex-deep-search/data/codex-search-results"
+# === Paths (macOS / clekee's Mac mini) ===
+RESULT_DIR="${HOME}/work/openclaw-skills/codex-search/data/results"
 OPENCLAW_BIN="/opt/homebrew/bin/openclaw"
 CODEX_BIN="${CODEX_BIN:-/opt/homebrew/bin/codex}"
 OPENCLAW_CONFIG="${HOME}/.openclaw/openclaw.json"
@@ -12,7 +12,7 @@ OPENCLAW_CONFIG="${HOME}/.openclaw/openclaw.json"
 PROMPT=""
 OUTPUT=""
 MODEL="gpt-5.3-codex"
-SANDBOX="workspace-write"
+SANDBOX="full-auto"
 TIMEOUT=120
 TELEGRAM_GROUP=""
 TASK_NAME="search-$(date +%s)"
@@ -43,7 +43,6 @@ mkdir -p "$RESULT_DIR"
 
 # Write task metadata
 STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-# macOS may not have jq — use python3 as fallback
 if command -v jq &>/dev/null; then
   jq -n \
     --arg name "$TASK_NAME" \
@@ -52,11 +51,6 @@ if command -v jq &>/dev/null; then
     --arg ts "$STARTED_AT" \
     '{task_name: $name, prompt: $prompt, output: $output, started_at: $ts, status: "running"}' \
     > "${RESULT_DIR}/latest-meta.json"
-else
-  python3 -c "
-import json, sys
-json.dump({'task_name':'$TASK_NAME','prompt':'''$PROMPT''','output':'$OUTPUT','started_at':'$STARTED_AT','status':'running'}, open('${RESULT_DIR}/latest-meta.json','w'), indent=2)
-"
 fi
 
 SEARCH_INSTRUCTION="You are a research assistant. Search the web for the following query.
@@ -72,9 +66,9 @@ Query: $PROMPT
 
 Start by writing the file header NOW, then search and append."
 
-echo "[codex-deep-search] Task: $TASK_NAME"
-echo "[codex-deep-search] Output: $OUTPUT"
-echo "[codex-deep-search] Model: $MODEL | Reasoning: low | Timeout: ${TIMEOUT}s"
+echo "[codex-search] Task: $TASK_NAME"
+echo "[codex-search] Output: $OUTPUT"
+echo "[codex-search] Model: $MODEL | Timeout: ${TIMEOUT}s"
 
 # Pre-create output file
 cat > "$OUTPUT" <<EOF
@@ -84,32 +78,23 @@ cat > "$OUTPUT" <<EOF
 ---
 EOF
 
-# Run Codex with timeout
-gtimeout="${TIMEOUT}"
-if command -v gtimeout &>/dev/null; then
-  gtimeout "$TIMEOUT" "$CODEX_BIN" exec \
-    --model "$MODEL" \
-    --full-auto \
-    --sandbox "$SANDBOX" \
-    -c 'model_reasoning_effort="low"' \
-    "$SEARCH_INSTRUCTION" 2>&1 | tee "${RESULT_DIR}/task-output.txt"
-  EXIT_CODE=${PIPESTATUS[0]}
-elif command -v timeout &>/dev/null; then
-  timeout "$TIMEOUT" "$CODEX_BIN" exec \
-    --model "$MODEL" \
-    --full-auto \
-    --sandbox "$SANDBOX" \
-    -c 'model_reasoning_effort="low"' \
-    "$SEARCH_INSTRUCTION" 2>&1 | tee "${RESULT_DIR}/task-output.txt"
-  EXIT_CODE=${PIPESTATUS[0]}
-else
-  # No timeout command available — run directly
+# Run Codex with timeout — use full-auto sandbox to avoid path permission issues
+run_codex() {
   "$CODEX_BIN" exec \
     --model "$MODEL" \
     --full-auto \
-    --sandbox "$SANDBOX" \
     -c 'model_reasoning_effort="low"' \
     "$SEARCH_INSTRUCTION" 2>&1 | tee "${RESULT_DIR}/task-output.txt"
+}
+
+if command -v gtimeout &>/dev/null; then
+  gtimeout "$TIMEOUT" bash -c "$(declare -f run_codex); CODEX_BIN='$CODEX_BIN' MODEL='$MODEL' SEARCH_INSTRUCTION='$SEARCH_INSTRUCTION' RESULT_DIR='$RESULT_DIR' run_codex"
+  EXIT_CODE=${PIPESTATUS[0]}
+elif command -v timeout &>/dev/null; then
+  timeout "$TIMEOUT" bash -c "$(declare -f run_codex); CODEX_BIN='$CODEX_BIN' MODEL='$MODEL' SEARCH_INSTRUCTION='$SEARCH_INSTRUCTION' RESULT_DIR='$RESULT_DIR' run_codex"
+  EXIT_CODE=${PIPESTATUS[0]}
+else
+  run_codex
   EXIT_CODE=${PIPESTATUS[0]}
 fi
 
@@ -123,7 +108,6 @@ COMPLETED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 # Calculate duration (macOS compatible)
 END_TS=$(date +%s)
-# Extract start timestamp — parse ISO date
 START_TS=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$STARTED_AT" +%s 2>/dev/null || echo "$END_TS")
 ELAPSED=$(( END_TS - START_TS ))
 MINS=$(( ELAPSED / 60 ))
@@ -145,33 +129,34 @@ if command -v jq &>/dev/null; then
     > "${RESULT_DIR}/latest-meta.json"
 fi
 
-echo "[codex-deep-search] Done (${DURATION}, exit=${EXIT_CODE}, ${LINES} lines)"
+echo "[codex-search] Done (${DURATION}, exit=${EXIT_CODE}, ${LINES} lines)"
 
-# Send Telegram notification if configured
+# ── Send full result content to Telegram ──
 if [[ -n "$TELEGRAM_GROUP" ]] && [[ -x "$OPENCLAW_BIN" ]]; then
   STATUS_EMOJI="✅"
   [[ "$EXIT_CODE" == "124" ]] && STATUS_EMOJI="⏱"
   [[ "$EXIT_CODE" != "0" ]] && [[ "$EXIT_CODE" != "124" ]] && STATUS_EMOJI="❌"
 
-  # Extract summary (first 800 chars of result file, skip header)
-  SUMMARY=$(sed -n '5,30p' "$OUTPUT" 2>/dev/null | head -c 800 || echo "No results")
+  # Read the full result file (truncate at 3500 chars for Telegram message limit)
+  FULL_CONTENT=$(cat "$OUTPUT" 2>/dev/null | head -c 3500 || echo "No results")
+  TRUNCATED=""
+  if [[ $(wc -c < "$OUTPUT" 2>/dev/null || echo 0) -gt 3500 ]]; then
+    TRUNCATED="
 
-  MSG="${STATUS_EMOJI} *Deep Search 完成*
+_(结果已截断，完整内容 ${LINES} 行)_"
+  fi
 
-🔍 *查询:* ${PROMPT}
-⏱ *耗时:* ${DURATION} | 📄 ${LINES} 行
-📂 \`${OUTPUT}\`
+  MSG="${STATUS_EMOJI} *Codex Search 完成* (${DURATION})
 
-📝 *摘要:*
-${SUMMARY}"
+${FULL_CONTENT}${TRUNCATED}"
 
   "$OPENCLAW_BIN" message send \
     --channel telegram \
     --target "$TELEGRAM_GROUP" \
-    --message "$MSG" 2>/dev/null || echo "[codex-deep-search] Telegram notification failed"
+    --message "$MSG" 2>/dev/null || echo "[codex-search] Telegram notification failed"
 fi
 
-# ---- Wake AGI via /hooks/wake ----
+# ── Wake agent via /hooks/wake ──
 GATEWAY_PORT="${OPENCLAW_GATEWAY_PORT:-18789}"
 HOOK_TOKEN=""
 if [[ -f "$OPENCLAW_CONFIG" ]]; then
@@ -179,13 +164,13 @@ if [[ -f "$OPENCLAW_CONFIG" ]]; then
 fi
 
 if [[ -n "$HOOK_TOKEN" ]]; then
-  WAKE_TEXT="[DEEP_SEARCH_DONE] task=${TASK_NAME} output=${OUTPUT} lines=${LINES} duration=${DURATION} status=$(python3 -c "import json; print(json.load(open('${RESULT_DIR}/latest-meta.json')).get('status','unknown'))" 2>/dev/null)"
-  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+  WAKE_TEXT="[CODEX_SEARCH_DONE] task=${TASK_NAME} output=${OUTPUT} lines=${LINES} duration=${DURATION} exit=${EXIT_CODE}"
+  curl -s -o /dev/null -X POST \
     "http://localhost:${GATEWAY_PORT}/hooks/wake" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${HOOK_TOKEN}" \
-    -d "{\"text\":\"${WAKE_TEXT}\",\"mode\":\"now\"}" 2>/dev/null)
-  echo "[codex-deep-search] Wake sent (HTTP ${HTTP_CODE})"
+    -d "{\"text\":\"${WAKE_TEXT}\",\"mode\":\"now\"}" 2>/dev/null || true
+  echo "[codex-search] Wake sent"
 else
-  echo "[codex-deep-search] No hook token, skipping wake"
+  echo "[codex-search] No hook token, skipping wake"
 fi

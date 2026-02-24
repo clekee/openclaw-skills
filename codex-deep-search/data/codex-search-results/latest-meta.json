@@ -1,0 +1,11 @@
+{
+  "task_name": "amd-stock-drop",
+  "prompt": "Why has AMD stock dropped so much recently in 2025? What are the main reasons for AMD share price decline?",
+  "output": "/Users/clekee/work/openclaw-skills/codex-deep-search/data/codex-search-results/amd-stock-drop.md",
+  "started_at": "2026-02-24T10:05:17Z",
+  "completed_at": "2026-02-24T10:06:33Z",
+  "duration": "-478m-44s",
+  "lines": 7,
+  "exit_code": 0,
+  "status": "done"
+}
