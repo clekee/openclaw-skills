@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # === Paths (macOS / clekee's Mac mini) ===
-RESULT_DIR="${HOME}/work/openclaw-skills/codex-search/data/results"
+RESULT_DIR="${HOME}/work/openclaw-skills-working-data/codex-search"
 OPENCLAW_BIN="/opt/homebrew/bin/openclaw"
 CODEX_BIN="${CODEX_BIN:-/opt/homebrew/bin/codex}"
 OPENCLAW_CONFIG="${HOME}/.openclaw/openclaw.json"
