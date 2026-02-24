@@ -40,9 +40,16 @@ bash ~/work/openclaw-skills/codex-search/scripts/search.sh \
 
 Then **read the output file and send the content to the user in chat**.
 
-## Post-Search Rule
+## Post-Search Rule (必须遵守)
 
-**Read the result file, extract the "Brief Summary" section, and send a clean synthesized answer in chat.** Do NOT dump the raw per-search-round notes (Search 1, Search 2...) — the user wants the final conclusion, not the research process. Never just give a file path.
+搜索完成后，读取结果文件，然后按以下规则输出：
+
+1. **用中文输出**
+2. **不要 dump 原始搜索笔记**（Search 1, Search 2... 这种逐轮记录不要发）
+3. **有条理地重组内容** — 把多轮搜索的 raw 结果串起来，按逻辑分层整理
+4. **保持细节浓度** — 不要压缩成几句话的 brief，关键数据、分析师观点、时间线、来源都要保留
+5. **绝不只给文件路径** — 用户不会去打开 md 文件
+6. 数据来源在末尾统一标注即可，不需要每句话都带链接
 
 ## Parameters
 
