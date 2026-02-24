@@ -78,25 +78,20 @@ cat > "$OUTPUT" <<EOF
 ---
 EOF
 
-# Run Codex with timeout — use full-auto sandbox to avoid path permission issues
-run_codex() {
-  "$CODEX_BIN" exec \
-    --model "$MODEL" \
-    --full-auto \
-    -c 'model_reasoning_effort="low"' \
-    "$SEARCH_INSTRUCTION" 2>&1 | tee "${RESULT_DIR}/task-output.txt"
-}
-
+# Run Codex — use full-auto sandbox to avoid path permission issues
+TIMEOUT_CMD=""
 if command -v gtimeout &>/dev/null; then
-  gtimeout "$TIMEOUT" bash -c "$(declare -f run_codex); CODEX_BIN='$CODEX_BIN' MODEL='$MODEL' SEARCH_INSTRUCTION='$SEARCH_INSTRUCTION' RESULT_DIR='$RESULT_DIR' run_codex"
-  EXIT_CODE=${PIPESTATUS[0]}
+  TIMEOUT_CMD="gtimeout $TIMEOUT"
 elif command -v timeout &>/dev/null; then
-  timeout "$TIMEOUT" bash -c "$(declare -f run_codex); CODEX_BIN='$CODEX_BIN' MODEL='$MODEL' SEARCH_INSTRUCTION='$SEARCH_INSTRUCTION' RESULT_DIR='$RESULT_DIR' run_codex"
-  EXIT_CODE=${PIPESTATUS[0]}
-else
-  run_codex
-  EXIT_CODE=${PIPESTATUS[0]}
+  TIMEOUT_CMD="timeout $TIMEOUT"
 fi
+
+$TIMEOUT_CMD "$CODEX_BIN" exec \
+  --model "$MODEL" \
+  --full-auto \
+  -c 'model_reasoning_effort="low"' \
+  "$SEARCH_INSTRUCTION" 2>&1 | tee "${RESULT_DIR}/task-output.txt"
+EXIT_CODE=${PIPESTATUS[0]}
 
 # Append completion marker
 if [[ -f "$OUTPUT" ]]; then
