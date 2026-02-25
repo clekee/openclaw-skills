@@ -32,7 +32,7 @@ def fetch_trending_daily():
         desc = html.unescape(d.group(1).strip()) if d else ''
         l = re.search(r'itemprop="programmingLanguage">(.*?)</span>', a)
         lang = l.group(1).strip() if l else 'N/A'
-        s = re.search(r'Link--muted d-inline-block mr-3">\s*.*?([\d,]+)\s*</a>', a, re.DOTALL)
+        s = re.search(r'/stargazers"[^>]*>.*?</svg>\s*([\d,]+)\s*</a>', a, re.DOTALL)
         stars = int(s.group(1).replace(',','')) if s else 0
         t = re.search(r'([\d,]+)\s*stars today', a)
         stars_today = int(t.group(1).replace(',','')) if t else 0
