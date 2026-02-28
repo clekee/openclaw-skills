@@ -6,11 +6,29 @@ A collection of custom skills for [OpenClaw](https://github.com/openclaw/opencla
 
 | Skill | Description |
 |---|---|
-| [leap-screener](./leap-screener/) | Screen US stocks for LEAP Call opportunities (3-layer funnel → xlsx report → Telegram delivery) |
+| [codex-search](./codex-search/) | Deep web search using Codex CLI for complex queries needing multi-source synthesis |
+| [codex-deep-search](./codex-deep-search/) | Extended deep search with data persistence |
+| [gateway-autofix](./gateway-autofix/) | macOS launchd watchdog for automatic OpenClaw gateway crash recovery |
+| [github-tech-watch-daily](./github-tech-watch-daily/) | Daily GitHub trending report with rolling deduplication → Telegram delivery |
+| [leap-screener](./leap-screener/) | Screen US stocks for LEAP Call opportunities (3-layer funnel → xlsx report → Telegram) |
+| [socratic-learning-coach](./socratic-learning-coach/) | Socratic questioning method for active recall and understanding gap diagnosis |
+| [x-brand-operator](./x-brand-operator/) | Operate a personal X/Twitter account with human-like AI hot-topic engagement |
 
 ## Installation
 
-Copy the skill folder into your OpenClaw skills directory, or use the `.skill` package file.
+Add the skill directory to your OpenClaw config:
+
+```json
+{
+  "skills": {
+    "load": {
+      "extraDirs": ["~/work/openclaw-skills"]
+    }
+  }
+}
+```
+
+Or copy individual skill folders into your OpenClaw skills directory.
 
 ## License
 

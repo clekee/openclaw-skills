@@ -1,0 +1,13 @@
+{
+  "query": "(AI OR LLM OR agent OR benchmark OR inference OR open-source) lang:en -is:retweet",
+  "candidate_limit": 50,
+  "target_count": 5,
+  "recency_hours": 24,
+  "weights": {
+    "likes": 1.0,
+    "retweets": 1.5,
+    "replies": 1.2,
+    "author_followers_log": 2.0,
+    "recency_decay": 1.0
+  }
+}

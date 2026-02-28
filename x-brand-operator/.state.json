@@ -1,0 +1,14 @@
+{
+  "week": "2026-W09",
+  "quota": {
+    "reply": 20,
+    "synthesis": 4,
+    "original": 1
+  },
+  "done": {
+    "reply": 2,
+    "synthesis": 0,
+    "original": 0
+  },
+  "next_due_ts": 1772287982
+}
