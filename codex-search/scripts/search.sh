@@ -2,10 +2,10 @@
 # codex-search — Deep web search via Codex CLI with dispatch pattern (background + Telegram callback)
 set -euo pipefail
 
-# === Paths (macOS / clekee's Mac mini) ===
+# === Paths (auto-detect via $PATH) ===
 RESULT_DIR="/tmp/codex-search-results"
-OPENCLAW_BIN="/opt/homebrew/bin/openclaw"
-CODEX_BIN="${CODEX_BIN:-/opt/homebrew/bin/codex}"
+OPENCLAW_BIN="${OPENCLAW_BIN:-$(command -v openclaw || echo openclaw)}"
+CODEX_BIN="${CODEX_BIN:-$(command -v codex || echo codex)}"
 OPENCLAW_CONFIG="${HOME}/.openclaw/openclaw.json"
 
 # Defaults
