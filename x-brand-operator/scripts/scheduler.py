@@ -40,12 +40,18 @@ def main():
     due = now >= state.get("next_due_ts", now)
     action = "none"
     if due:
-        if state["done"]["reply"] < state["quota"]["reply"]:
-            action = "reply"
-        elif state["done"]["synthesis"] < state["quota"]["synthesis"]:
-            action = "synthesis"
-        elif state["done"]["original"] < state["quota"]["original"]:
-            action = "original"
+        # Weighted random selection based on remaining quota
+        # This ensures synthesis/original actually get picked
+        candidates = []
+        for kind in ["reply", "synthesis", "original"]:
+            remaining = state["quota"][kind] - state["done"].get(kind, 0)
+            if remaining > 0:
+                candidates.append((kind, remaining))
+
+        if candidates:
+            kinds, weights = zip(*candidates)
+            action = random.choices(kinds, weights=weights, k=1)[0]
+
         state["next_due_ts"] = int((datetime.now(UTC) + timedelta(hours=random.randint(3, 10))).timestamp())
 
     with open(args.state, "w", encoding="utf-8") as f:
